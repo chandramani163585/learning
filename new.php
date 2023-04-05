@@ -127,6 +127,118 @@ sudo /usr/sbin/nginx -t
 
 
 
+### Varnish 
+
+1. On Ubuntu, you can install Varnish Cache by running the following command:
+
+$ sudo apt-get update
+$ sudo apt-get install varnish
+
+2. Configure Varnish:
+
+By default, Varnish listens on port 6081, so you need to change its configuration to listen on port 80. Edit the Varnish configuration file /etc/varnish/default.vcl using your preferred text editor:
+
+$ sudo nano /etc/varnish/default.vcl
+
+Then add the following code to the file to listen on port 80:
+
+backend default {
+    .host = "127.0.0.1";
+    .port = "8080";
+}
+
+sub vcl_recv {
+    if (req.http.host == "yourdomain.com") {
+        set req.backend_hint = default;
+    }
+}
+
+
+3. Configure Nginx:
+
+Now you need to configure Nginx to listen on port 8080 and forward requests to Varnish on port 80. Open your Nginx configuration file /etc/nginx/nginx.conf 
+
+$ sudo nano /etc/nginx/nginx.conf
+
+Then add the following code to the file:
+server {
+    listen 8080;
+    server_name yourdomain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+
+4. Restart Nginx and Varnish:
+   Finally, restart both Nginx and Varnish to apply the changes:
+
+$ sudo service nginx restart
+$ sudo service varnish restart
+
+
+
+
+rudra
+Hello123#
+
+m_test
+
+
+#### to check response time in curl 
+curl -o /dev/null -s -w "%{time_total}\n" http://pacific.localhost:8080/
+
+
+
+
+=======>
+Theory for `$ sudo ufw allow 8080`
+=======>
+
+The command sudo ufw allow 8080 adds a rule to the Uncomplicated Firewall (UFW) to allow incoming traffic on port 8080. ufw is a front-end for iptables, a popular firewall software in Linux. By default, UFW is disabled in many Linux distributions, and this command enables it and allows incoming traffic on port 8080. This is useful when you have a web server running on port 8080 and want to allow external users to access it.
+
+
+
+
+
+
+
+
+
+$ cp /lib/systemd/system/varnish.service  /etc/systemd/system/
+$ netstat -plntu
+
+systemctl daemon-reload
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -137,6 +249,11 @@ sudo /usr/sbin/nginx -t
 $ sudo lsof -i :8080
 $ sudo ps -p <PID>
 sudo ps -p 8080
+
+
+#### To check which Port nginx running 
+sudo lsof -i -P -n | grep nginx
+
 
 nginx path prefix: "/usr/local/nginx"
 nginx binary file: "/usr/local/nginx/sbin/nginx"
@@ -182,8 +299,11 @@ grep -r "/home/rudra1/Desktop/chandramani/laravel" /path/to/folder/
 
 
 
+  git@git.rudraserver.com:mohitjamwal/dolphin-mps-referral-tool.git 
 
+  Welcome to nginx
 
+  /var/www/html/laravel
 
 
   sudo apt-get update
@@ -228,130 +348,9 @@ include fastcgi_params;
 
 
 
+https://dolphinmps.rudraserver.com/ 
 
-############################## some extar points for server  ######################
-
-
-
-proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m inactive=60m;
-# client_header_buffer_size 4k;
-# large_client_header_buffers 4 4k;
-
-
-server {
-    listen 8081;
-    listen [::]:8081;
-
-    # include snippets/letsencrypt.conf;
-
-    server_name pacific.localhost;
-    
-    # Cache settings
-     proxy_cache_key "$scheme$request_method$host$request_uri";
-
-    root /home/rudra1/Desktop/chandramani/nginx_server/pacific.localhost;
-    index index.php index.html index.htm;
-
-    #ssl_certificate /etc/letsencrypt/live/print.pacificbarcode.com/fullchain.pem;   // from real server need to know more 
-    #ssl_certificate_key /etc/letsencrypt/live/print.pacificbarcode.com/privkey.pem;  // from real server need to know more 
-
-
-    location / {
-
-        proxy_pass http://localhost:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_set_header X-Real-IP  $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-        proxy_set_header X-Forwarded-Port 8080;
-        proxy_set_header Host $host;
-        proxy_buffer_size 128k;
-        proxy_buffers 4 256k;
-        proxy_busy_buffers_size 256k;
-
-                
-        # Pass request to varnish
-        #proxy_pass http://127.0.0.1:6081;
-        #proxy_set_header Host $host;
-        #proxy_set_header X-Real-IP $remote_addr;
-        #proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-        #proxy_cache_bypass $http_pragma;
-        #proxy_cache_revalidate on;
-
-        ##try_files $uri $uri/ =404;
-        ## try_files $uri $uri/ /index.php?q=$uri&$args;   // form real server 
-        try_files $uri $uri/ /index.php ;
-        add_header Cache-Control "public, max-age=3600";
-    }
-
-    location ~ \.php$ {
-        proxy_pass http://localhost:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_set_header X-Real-IP  $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-        proxy_set_header X-Forwarded-Port 8080;
-        proxy_set_header Host $host;
-        proxy_buffer_size 128k;
-        proxy_buffers 4 256k;
-        proxy_busy_buffers_size 256k;
-
-
-        # Pass request to varnish
-        #proxy_pass http://127.0.0.1:6081;
-        #proxy_set_header Host $host;
-        #proxy_set_header X-Real-IP $remote_addr;
-        #proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-        add_header Cache-Control "public, max-age=3600";
-        #proxy_cache_bypass $http_pragma;
-        #proxy_cache_revalidate on;
-
-        include fastcgi_params;
-        include snippets/fastcgi-php.conf;  
-        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock; 
-        ##fastcgi_read_timeout 600;   // from real server need to know more 
-
-        ## Added varnish cache headers 
-        ##proxy_pass http://127.0.0.1;
-        ##proxy_set_header Host $host;
-        ##proxy_set_header X-Real-IP $remote_addr;
-        ##proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        ##proxy_set_header X-Forwarded-Proto $scheme;
-
-        #add_header Cache-Control "public, max-age=3600";
-    }
-
-   # location / {
-               # proxy_pass http://localhost:8080;
-               # proxy_http_version 1.1;
-               # proxy_set_header Connection "";
-               # proxy_set_header X-Real-IP  $remote_addr;
-               # proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-               # proxy_set_header X-Forwarded-Proto https;
-               # proxy_set_header X-Forwarded-Port 8080;
-               # proxy_set_header Host $host;
-               # proxy_buffer_size 128k;
-               # proxy_buffers 4 256k;
-               # proxy_busy_buffers_size 256k;
-                
-
-                #location ~* \.(html|css|jpg|gif|ico|js)$ {
-                #   proxy_cache          print-cache;
-                #   proxy_cache_key      $host$uri$is_args$args;
-                #   proxy_cache_valid    200 301 302 30m;
-                #   expires              30d;
-                #   proxy_pass  http://localhost:80;
-                #}
-		
-     #   }
-
-
-}
+/mnt/storage/applications/dolphinmps
 
 
 
-############################## some  extra code   ######################
