@@ -168,23 +168,10 @@ curl -T /path/to/local/file.ext http://example.com/remote/file.ext
 #### Create-subdomain-with-nginx 
 https://chukwuemekaigbokwe.medium.com/how-to-create-subdomain-with-nginx-ubuntu-in-digital-ocean-13a12c5805d8 
 
-
-
 /run/php/php8.0-fpm.sock
-
-
 /home/rudra1/Desktop/chandramani/laravel 
 
 grep -r "/home/rudra1/Desktop/chandramani/laravel" /path/to/folder/
-
-
-
-
-
-
-
-
-
 
   sudo apt-get update
   sudo apt-get install php-fpm php-mysql
