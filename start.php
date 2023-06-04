@@ -157,10 +157,6 @@ nginx http scgi temporary files: "scgi_temp"
 ./configure --sbin-path=/usr/bin/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --with-pcre --pid-path=/var/run/nginx.pid --with-http_ssl_module
 
 
-
-
-
-
 #### The curl -T command is used to upload a local file to a remote server using the HTTP PUT method.
 curl -T /path/to/local/file.ext http://example.com/remote/file.ext
 
@@ -274,7 +270,7 @@ server {
     }
 
     location ~ \.php$ {
-        proxy_pass http://localhost:8080;
+        proxy_pass http://localhost:6081;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         proxy_set_header X-Real-IP  $remote_addr;
@@ -338,7 +334,6 @@ server {
 
 
 }
-
 
 
 ############################## some  extra code   ######################

@@ -217,7 +217,7 @@ systemctl daemon-reload
  
 
 
-
+/home/mani/ftp
 
 
 
